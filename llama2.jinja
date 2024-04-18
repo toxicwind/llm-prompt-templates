@@ -1,0 +1,30 @@
+{# Metadata #}
+{% set stop_strings = ["[INST]", "[/INST]","[/OUT]","[/OUTPUT]","<<SYS>>","<</SYS>>"] %}
+
+{% set start_system = '<<SYS>>' %}
+{% set end_system = '<</SYS>>' %}
+{% set start_inst = '[INST]' %}
+{% set end_inst = '[/INST]' %}
+
+{#- Beginning of output stream -#}
+{{- bos_token -}}
+{% if bos_token|length > 0 %}
+    {{- ' ' -}}
+{% endif %}
+
+{#- Processing each message -#}
+{% for message in messages %}
+    {% if message['role'] == 'system' %}
+        {#- System message formatting -#}
+        {{- start_system +  message['content'] + end_system -}}
+    {% elif message['role'] == 'user' %}
+        {#- User instruction formatting -#}
+        {{- start_inst + message['content'] + end_inst -}}
+    {% elif message['role'] == 'assistant' %}
+        {#- Assistant messages are processed normally, optionally with an end of stream token -#}
+        {{- message['content'] + eos_token -}}
+    {% else %}
+        {#- Error handling for unsupported roles -#}
+        {{ raise_exception('Unsupported message role detected!') }}
+    {% endif %}
+{% endfor %}
